@@ -2,6 +2,7 @@ const Transaction = require("../models/Transaction");
 const User = require("../models/User");
 const Wallet = require("../models/Wallet");
 const RewardInfo = require("../models/Reward");
+const SocialMedia = require("../models/SocialMedia");
 
 const ApiResponse = require("../utils/apiResponse");
 const { createTransaction } = require("../controllers/walletController");
@@ -369,6 +370,17 @@ exports.logout = async (req, res, next) => {
       });
     }
     ApiResponse.success(null, "User logged out successfully").send(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get social media links
+// @route   GET /api/v1/users/social-media
+exports.getSocialMedia = async (req, res, next) => {
+  try {
+    const socialMedia = await SocialMedia.find();
+    ApiResponse.success(socialMedia).send(res);
   } catch (error) {
     next(error);
   }

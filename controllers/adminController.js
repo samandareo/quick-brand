@@ -8,6 +8,7 @@ const ApiResponse = require("../utils/apiResponse");
 const Notification = require("../models/Notification");
 const { createTransaction } = require("./walletController");
 const RewardInfo = require("../models/Reward");
+const SocialMedia = require("../models/SocialMedia");
 
 // @desc    Login admin
 // @route   POST /api/v1/admins/login
@@ -380,3 +381,64 @@ exports.createRewardInfo = async (req, res, next) => {
   }
 };
 
+
+// @desc    Get social media links
+// @route   GET /api/v1/admins/social-media
+// @access  Admin
+exports.getSocialMedia = async (req, res, next) => {
+  try {
+    const socialMedia = await SocialMedia.find();
+    ApiResponse.success(socialMedia).send(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Create social media link
+// @route   POST /api/v1/admins/social-media
+// @access  Admin
+exports.createSocialMedia = async (req, res, next) => {
+  try {
+    const { name, url } = req.body;
+    if (!name || !url) {
+      return ApiResponse.error("Name and URL are required").send(res);
+    }
+    const newSocialMedia = await SocialMedia.create({ name, url });
+    ApiResponse.success(newSocialMedia).send(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update social media links
+// @route   PUT /api/v1/admins/social-media
+// @access  Admin
+exports.updateSocialMedia = async (req, res, next) => {
+  try {
+    const { name, url } = req.body;
+    if (!name || !url) {
+      return ApiResponse.error("Name and URL are required").send(res);
+    }
+    const updatedSocialMedia = await SocialMedia.findByIdAndUpdate(req.params.id, { name, url }, { new: true });
+    ApiResponse.success(updatedSocialMedia).send(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete social media link
+// @route   DELETE /api/v1/admins/social-media
+// @access  Admin
+exports.deleteSocialMedia = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const socialMedia = await SocialMedia.findById(id);
+    if (!socialMedia) {
+      return ApiResponse.notFound("Social media link not found").send(res);
+    }
+    await SocialMedia.findByIdAndDelete(id);
+    ApiResponse.success(null, "Social media link deleted successfully").send(res);
+  } catch (error) {
+    next(error);
+  }
+};

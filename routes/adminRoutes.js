@@ -49,4 +49,10 @@ router
   .post(protectAdmin, adminController.createRewardInfo) 
   .put(protectAdmin, adminController.updateRewardInfo);
 
+// Social media routes
+router.route("/social-media").get(protectAdmin, adminController.getSocialMedia);
+router.route("/social-media").post(protectAdmin, adminController.createSocialMedia);
+router.route("/social-media/:id").put(protectAdmin, adminController.updateSocialMedia);
+router.route("/social-media/:id").delete(protectAdmin, adminController.deleteSocialMedia);
+
 module.exports = router;
