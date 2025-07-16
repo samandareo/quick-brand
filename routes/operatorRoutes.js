@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const operatorController = require("../controllers/operatorController");
 const { protectAdmin } = require("../middlewares/auth");
-const upload = require("../utils/multerConfig");
+const { upload } = require("../utils/multerConfig");
 
 // Public routes
 router.route("/").get(operatorController.getOperators);

@@ -9,6 +9,10 @@ const SocialMediaSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  logo: {
+    type: String,
+    default: null,
+  },
 });
 
 module.exports = mongoose.model("SocialMedia", SocialMediaSchema);

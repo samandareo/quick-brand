@@ -9,6 +9,18 @@ const Notification = require("../models/Notification");
 const { createTransaction } = require("./walletController");
 const RewardInfo = require("../models/Reward");
 const SocialMedia = require("../models/SocialMedia");
+const fs = require("fs");
+const path = require("path");
+
+// Helper to delete social media logo file
+const deleteSocialMediaLogo = (logoFilename) => {
+  if (logoFilename) {
+    const logoPath = path.join(__dirname, "../public/uploads/social-media", logoFilename);
+    if (fs.existsSync(logoPath)) {
+      fs.unlinkSync(logoPath);
+    }
+  }
+};
 
 // @desc    Login admin
 // @route   POST /api/v1/admins/login
@@ -394,18 +406,42 @@ exports.getSocialMedia = async (req, res, next) => {
   }
 };
 
+// @desc    Get single social media link
+// @route   GET /api/v1/admins/social-media/:id
+// @access  Admin
+exports.getSocialMediaById = async (req, res, next) => {
+  try {
+    const socialMedia = await SocialMedia.findById(req.params.id);
+    if (!socialMedia) {
+      return ApiResponse.notFound("Social media link not found").send(res);
+    }
+    ApiResponse.success(socialMedia).send(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Create social media link
 // @route   POST /api/v1/admins/social-media
 // @access  Admin
 exports.createSocialMedia = async (req, res, next) => {
   try {
     const { name, url } = req.body;
-    if (!name || !url) {
+    if (!name || !url || !req.file) {
+      deleteSocialMediaLogo(req.file?.filename);
       return ApiResponse.error("Name and URL are required").send(res);
     }
-    const newSocialMedia = await SocialMedia.create({ name, url });
+    
+    const newSocialMedia = await SocialMedia.create({ 
+      name, 
+      url,
+      logo: req.file?.filename || null
+    });
+    
     ApiResponse.success(newSocialMedia).send(res);
   } catch (error) {
+    deleteSocialMediaLogo(req.file?.filename);
+    ApiResponse.error(error.message).send(res);
     next(error);
   }
 };
@@ -417,11 +453,35 @@ exports.updateSocialMedia = async (req, res, next) => {
   try {
     const { name, url } = req.body;
     if (!name || !url) {
+      deleteSocialMediaLogo(req.file?.filename);
       return ApiResponse.error("Name and URL are required").send(res);
     }
-    const updatedSocialMedia = await SocialMedia.findByIdAndUpdate(req.params.id, { name, url }, { new: true });
+    
+    // Find existing social media to check if it has a logo
+    const existingSocialMedia = await SocialMedia.findById(req.params.id);
+    if (!existingSocialMedia) {
+      deleteSocialMediaLogo(req.file?.filename);
+      return ApiResponse.notFound("Social media link not found").send(res);
+    }
+    
+    let updateData = { name, url };
+    
+    // Handle logo update
+    if (req.file) {
+      // Delete old logo file if it exists
+      deleteSocialMediaLogo(existingSocialMedia.logo);
+      updateData.logo = req.file.filename;
+    }
+    
+    const updatedSocialMedia = await SocialMedia.findByIdAndUpdate(
+      req.params.id, 
+      updateData, 
+      { new: true }
+    );
+    
     ApiResponse.success(updatedSocialMedia).send(res);
   } catch (error) {
+    deleteSocialMediaLogo(req.file?.filename);
     next(error);
   }
 };
@@ -436,6 +496,10 @@ exports.deleteSocialMedia = async (req, res, next) => {
     if (!socialMedia) {
       return ApiResponse.notFound("Social media link not found").send(res);
     }
+    
+    // Delete logo file if it exists
+    deleteSocialMediaLogo(socialMedia.logo);
+    
     await SocialMedia.findByIdAndDelete(id);
     ApiResponse.success(null, "Social media link deleted successfully").send(res);
   } catch (error) {
