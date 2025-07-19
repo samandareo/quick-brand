@@ -6,7 +6,7 @@ const {
   saveAdminToken,
   removeAdminToken,
 } = require("../utils/notificationService");
-const { socialMediaUpload } = require("../utils/multerConfig");
+const { socialMediaUpload, sliderUpload } = require("../utils/multerConfig");
 
 router.route("/login").post(adminController.login);
 
@@ -57,5 +57,13 @@ router.route("/social-media/:id")
   .get(protectAdmin, adminController.getSocialMediaById)
   .put(protectAdmin, socialMediaUpload.single("logo"), adminController.updateSocialMedia)
   .delete(protectAdmin, adminController.deleteSocialMedia);
+
+// Slider routes
+router.route("/sliders").get(protectAdmin, adminController.getSliders);
+router.route("/sliders").post(protectAdmin, sliderUpload.single("image"), adminController.createSlider);
+router.route("/sliders/:id")
+  .get(protectAdmin, adminController.getSliderById)
+  .put(protectAdmin, sliderUpload.single("image"), adminController.updateSlider)
+  .delete(protectAdmin, adminController.deleteSlider);
 
 module.exports = router;

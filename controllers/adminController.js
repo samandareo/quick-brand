@@ -1,26 +1,20 @@
+const ApiResponse = require("../utils/apiResponse");
+const { createTransaction } = require("./walletController");
+
 const Admin = require("../models/Admin");
 const Offer = require("../models/Offer");
 const Transaction = require("../models/Transaction");
 const User = require("../models/User");
 const Wallet = require("../models/Wallet");
 const PurchaseRequest = require("../models/PurchaseRequest");
-const ApiResponse = require("../utils/apiResponse");
 const Notification = require("../models/Notification");
-const { createTransaction } = require("./walletController");
 const RewardInfo = require("../models/Reward");
 const SocialMedia = require("../models/SocialMedia");
+const Slider = require("../models/Slider");
+
 const fs = require("fs");
 const path = require("path");
 
-// Helper to delete social media logo file
-const deleteSocialMediaLogo = (logoFilename) => {
-  if (logoFilename) {
-    const logoPath = path.join(__dirname, "../public/uploads/social-media", logoFilename);
-    if (fs.existsSync(logoPath)) {
-      fs.unlinkSync(logoPath);
-    }
-  }
-};
 
 // @desc    Login admin
 // @route   POST /api/v1/admins/login
@@ -421,6 +415,16 @@ exports.getSocialMediaById = async (req, res, next) => {
   }
 };
 
+// Helper to delete social media logo file
+const deleteSocialMediaLogo = (logoFilename) => {
+  if (logoFilename) {
+    const logoPath = path.join(__dirname, "../public/uploads/social-media", logoFilename);
+    if (fs.existsSync(logoPath)) {
+      fs.unlinkSync(logoPath);
+    }
+  }
+};
+
 // @desc    Create social media link
 // @route   POST /api/v1/admins/social-media
 // @access  Admin
@@ -506,3 +510,92 @@ exports.deleteSocialMedia = async (req, res, next) => {
     next(error);
   }
 };
+
+
+// @desc    Get sliders
+// @route   GET /api/v1/admins/sliders
+// @access  Admin
+exports.getSliders = async (req, res, next) => {
+  try {
+    const sliders = await Slider.find();
+    ApiResponse.success(sliders).send(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc Get single slider
+// @route GET /api/v1/admins/sliders
+// @access Admin
+exports.getSliderById = async (req, res, next) => {
+  try {
+    const slider = await Slider.findById(req.params.id);
+    if (!slider) {
+      return ApiResponse.notFound("Slider not found").send(res);
+    }
+    ApiResponse.success(slider).send(res);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Helper to delete slider image file
+const deleteSliderImage = (sliderImageName) => {
+  if (sliderImageName) {
+    const imagePath = path.join(__dirname, "../public/uploads/sliders", sliderImageName);
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+    }
+  }
+};
+
+// @desc    Create slider
+// @route   POST /api/v1/admins/sliders
+// @access  Admin
+exports.createSlider = async (req, res, next) => {
+  try {
+    const { title, description, link, type } = req.body;
+
+    if (!title || !description || !req.file || !link || !type) {
+      deleteSliderImage(req.file?.filename);
+      return ApiResponse.error("All fields are required").send(res);
+    }
+
+    const newSlider = await Slider.create({ title, description, image: req.file?.filename || null, link, type });
+    ApiResponse.success(newSlider).send(res);
+  } catch (error) {
+    deleteSliderImage(req.file?.filename);
+    next(error);
+  }
+};
+
+// @desc Update slider
+// @route PUT /api/v1/admins/sliders
+// @access Admin
+exports.updateSlider = async (req, res, next) => {
+  try {
+    const { title, description, link, type } = req.body;
+    if (!title || !description || !req.file || !link || !type) {
+      deleteSliderImage(req.file?.filename);
+      return ApiResponse.error("All fields are required").send(res);
+    }
+
+    const slider = await Slider.findByIdAndUpdate(req.params.id, { title, description, image: req?.file?.filename || null, link, type }, { new: true });
+    ApiResponse.success(slider).send(res);
+  } catch (error) {
+    deleteSliderImage(req.file?.filename);
+    next(error);
+  }
+}
+
+// @desc Delete slider
+// @route DELETE /api/v1/admins/sliders
+// @access Admin
+exports.deleteSlider = async (req, res, next) => {
+  try {
+    const slider = await Slider.findByIdAndDelete(req.params.id);
+    ApiResponse.success("Slider deleted successfully").send(res);
+  } catch (error) {
+    next(error);
+  }
+}

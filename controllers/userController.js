@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Wallet = require("../models/Wallet");
 const RewardInfo = require("../models/Reward");
 const SocialMedia = require("../models/SocialMedia");
+const Slider = require("../models/Slider");
 
 const ApiResponse = require("../utils/apiResponse");
 const { createTransaction } = require("../controllers/walletController");
@@ -385,3 +386,22 @@ exports.getSocialMedia = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc Get sliders
+// @route GET /api/v1/users/sliders
+exports.getSliders = async (req, res, next) => {
+  const sliderType = req.query.type;
+
+  try {
+    let sliders;
+    if (sliderType === "all") {
+      sliders = await Slider.find({isActive: true}).sort({createdAt: -1})
+    } else {
+      sliders = await Slider.find({type: sliderType, isActive: true}).sort({createdAt: -1})
+    }
+
+    ApiResponse.success(sliders).send(res);
+  } catch (error) {
+    next(error);
+  }
+}

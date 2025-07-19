@@ -22,6 +22,17 @@ const socialMediaStorage = multer.diskStorage({
   },
 });
 
+// Slider image storage configuration
+const sliderStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "../public/uploads/sliders"));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "slider-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png|gif/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -47,4 +58,11 @@ const socialMediaUpload = multer({
   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
 });
 
-module.exports = { upload, socialMediaUpload };
+// Slider image upload configuration
+const sliderUpload = multer({
+  storage: sliderStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+});
+
+module.exports = { upload, socialMediaUpload, sliderUpload };

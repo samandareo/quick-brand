@@ -28,6 +28,11 @@ app.get("/api/", (req, res) => {
   `);
 });
 
+// Serve test chat client
+app.get("/api/test-chat", (req, res) => {
+  res.sendFile(__dirname + "/public/test-chat.html");
+});
+
 // Routes
 app.use("/api/v1/admins", require("./routes/adminRoutes"));
 app.use("/api/v1/users", require("./routes/userRoutes"));
@@ -35,6 +40,8 @@ app.use("/api/v1/wallet", require("./routes/walletRoutes"));
 app.use("/api/v1/offers", require("./routes/offerRoutes"));
 app.use("/api/v1/payment", require("./routes/paymentRoutes"));
 app.use("/api/v1/operators", require("./routes/operatorRoutes"));
+app.use("/api/v1/push-notifications", require("./routes/pushNotificationRoutes"));
+app.use("/api/v1/chat", require("./routes/chatRoutes"));
 
 // Error handler
 app.use(errorHandler);

@@ -53,7 +53,7 @@ adminSchema.pre("save", async function (next) {
 
 // Generate JWT token
 adminSchema.methods.generateAuthToken = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this._id, type: this.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "30d",
   });
 };
