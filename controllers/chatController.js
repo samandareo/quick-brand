@@ -182,6 +182,7 @@ exports.getAllUsers = async (req, res, next) => {
 
     ApiResponse.success(result).send(res);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };

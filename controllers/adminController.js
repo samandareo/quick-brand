@@ -570,23 +570,42 @@ exports.createSlider = async (req, res, next) => {
 };
 
 // @desc Update slider
-// @route PUT /api/v1/admins/sliders
+// @route PUT /api/v1/admins/sliders/:id
 // @access Admin
 exports.updateSlider = async (req, res, next) => {
   try {
-    const { title, description, link, type } = req.body;
-    if (!title || !description || !req.file || !link || !type) {
-      deleteSliderImage(req.file?.filename);
+    const { title, description, link, type, isActive } = req.body;
+    if (!title || !description || !link || !type || !isActive) {
       return ApiResponse.error("All fields are required").send(res);
     }
 
-    const slider = await Slider.findByIdAndUpdate(req.params.id, { title, description, image: req?.file?.filename || null, link, type }, { new: true });
+    // Find the existing slider
+    const slider = await Slider.findById(req.params.id);
+    if (!slider) {
+      return ApiResponse.error("Slider not found").send(res);
+    }
+
+    // If a new image is uploaded, delete the old one and use the new filename
+    let image = slider.image;
+    if (req.file) {
+      deleteSliderImage(slider.image); // delete old image
+      image = req.file.filename;
+    }
+
+    // Update the slider
+    slider.title = title;
+    slider.description = description;
+    slider.link = link;
+    slider.type = type;
+    slider.image = image;
+    slider.isActive = isActive;
+    await slider.save();
+
     ApiResponse.success(slider).send(res);
   } catch (error) {
-    deleteSliderImage(req.file?.filename);
     next(error);
   }
-}
+};
 
 // @desc Delete slider
 // @route DELETE /api/v1/admins/sliders

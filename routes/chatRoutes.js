@@ -4,25 +4,25 @@ const chatController = require("../controllers/chatController");
 const { protectUser, protectAdmin } = require("../middlewares/auth");
 
 // User and Admin routes
-router.route("/conversations").get(protectUser, chatController.getConversations);
-router.route("/unread-count").get(protectUser, chatController.getUnreadCount);
+router.route("/conversations").get(protectAdmin, chatController.getConversations);
+router.route("/unread-count").get(protectAdmin, chatController.getUnreadCount);
 
 // Conversation routes
 router
   .route("/conversations/:conversationId/messages")
-  .get(protectUser, chatController.getConversationMessages);
+  .get(protectAdmin, chatController.getConversationMessages);
 
 router
   .route("/conversations/:conversationId/seen")
-  .post(protectUser, chatController.markConversationAsSeen);
+  .post(protectAdmin, chatController.markConversationAsSeen);
 
 // User info route
-router.route("/users/:userId").get(protectUser, chatController.getUserInfo);
+router.route("/users/:userId").get(protectAdmin, chatController.getUserInfo);
 
 // Conversation between specific users
 router
   .route("/conversation/:userId1/:userId2")
-  .get(protectUser, chatController.getConversationBetweenUsers);
+  .get(protectAdmin, chatController.getConversationBetweenUsers);
 
 // Admin only routes
 router.route("/stats").get(protectAdmin, chatController.getChatStats);
