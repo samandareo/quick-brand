@@ -394,10 +394,13 @@ exports.getSliders = async (req, res, next) => {
 
   try {
     let sliders;
-    if (sliderType === "all") {
-      sliders = await Slider.find({isActive: true}).sort({createdAt: -1})
+    if (sliderType) {
+      sliders = await Slider.find({ type: sliderType, isActive: true }).sort({ createdAt: -1 });
     } else {
-      sliders = await Slider.find({type: sliderType, isActive: true}).sort({createdAt: -1})
+      sliders = await Slider.find({ isActive: true }).sort({ createdAt: -1 });
+    }
+    if (!sliders || sliders.length === 0) {
+      return ApiResponse.notFound("No sliders found").send(res);
     }
 
     ApiResponse.success(sliders).send(res);
