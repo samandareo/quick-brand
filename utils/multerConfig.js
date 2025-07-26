@@ -33,6 +33,17 @@ const sliderStorage = multer.diskStorage({
   },
 });
 
+// MobileBanking logo storage configuration
+const mobileBankingStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "../public/uploads/mobile-banking"));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "mobile-banking-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
 const fileFilter = (req, file, cb) => {
   const filetypes = /jpeg|jpg|png|gif/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -65,4 +76,10 @@ const sliderUpload = multer({
   limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
 });
 
-module.exports = { upload, socialMediaUpload, sliderUpload };
+const mobileBankingUpload = multer({
+  storage: mobileBankingStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+});
+
+module.exports = { upload, socialMediaUpload, sliderUpload, mobileBankingUpload };

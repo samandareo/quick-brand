@@ -30,6 +30,10 @@ class ApiResponse {
     return new ApiResponse(null, message, statusCode);
   }
 
+  static invalid(message = "Invalid value") {
+    return new ApiResponse(null, message, 400)
+  }
+
   send(res) {
     return res.status(this.statusCode).json({
       success: this.success,

@@ -31,7 +31,7 @@ const transactionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "completed", "failed", "reversed"],
+      enum: ["pending", "completed", "failed", "reversed", "rejected", "refunded", "cancelled", "success"],
       default: "pending",
     },
     metadata: {
