@@ -16,7 +16,7 @@ exports.protectAdmin = async (req, res, next) => {
 
     if (!token) {
       return ApiResponse.unauthorized(
-        "Not authorized to access this route"
+        "Not authorized to access this route without a token"
       ).send(res);
     }
 
@@ -25,7 +25,7 @@ exports.protectAdmin = async (req, res, next) => {
 
     if (!admin) {
       return ApiResponse.unauthorized(
-        "Not authorized to access this route"
+        "Not authorized to access this route without a valid admin"
       ).send(res);
     }
 
@@ -51,7 +51,7 @@ exports.protectUser = async (req, res, next) => {
 
     if (!token) {
       return ApiResponse.unauthorized(
-        "Not authorized to access this route"
+        "Not authorized to access this route without a token"
       ).send(res);
     }
 
@@ -60,18 +60,18 @@ exports.protectUser = async (req, res, next) => {
 
     if (!user)
       return ApiResponse.unauthorized(
-        "Not authorized to access this route"
+        "Not authorized to access this route without a valid user"
       ).send(res);
 
-    if (!user.isVerified && !req.body?.type === "subscription")
+    if (!user.isVerified && !(req.body?.type === "subscription"))
       return ApiResponse.unauthorized(
-        "User is not verified to access this route"
+        "User is not verified to access this route without a subscription"
       ).send(res);
 
     req.user = user;
     next();
   } catch (err) {
-    return ApiResponse.unauthorized("Not authorized to access this route").send(
+    return ApiResponse.unauthorized(`Not authorized to access this route ${err.message}`).send(
       res
     );
   }
