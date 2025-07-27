@@ -40,6 +40,7 @@ app.use("/api/v1/admins", require("./routes/mobileBankingRoutes"));
 
 app.use("/api/v1/users", require("./routes/userRoutes"));
 app.use("/api/v1/users", require("./routes/userManualWithdrawalRoutes"));
+app.user("/api/v1/users", require("./routes/mobileBankingRoutes"));
 app.use("/api/v1/wallet", require("./routes/walletRoutes"));
 app.use("/api/v1/offers", require("./routes/offerRoutes"));
 app.use("/api/v1/payment", require("./routes/paymentRoutes"));
