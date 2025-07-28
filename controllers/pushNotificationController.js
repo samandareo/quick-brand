@@ -47,6 +47,8 @@ exports.getNotifications = async (req, res, next) => {
       .skip(skip)
       .limit(parseInt(limit));
 
+    console.log("Notifications:", notifications);
+
     const total = await PushNotification.countDocuments(filter);
 
     const result = {

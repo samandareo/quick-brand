@@ -96,12 +96,14 @@ const sendPushNotificationToUsers = async (pushNotification, users) => {
         userTokenMap.set(token, user._id);
       });
     }
+    pushNotification.message = substituteVariables(pushNotification.message, user);
   });
 
   if (allTokens.length === 0) {
     console.log("No FCM tokens found for users");
     return { successCount: 0, failureCount: 0, totalUsers: users.length };
   }
+
 
   // Send FCM notifications
   const fcmResult = await sendToTokens(allTokens, {
@@ -170,6 +172,11 @@ const markNotificationAsRead = async (userId, notificationId) => {
     { new: true }
   );
 
+  if (!userNotification) {
+    throw new Error("Notification not found for user");
+  }
+
+
   if (userNotification) {
     // Update read count in push notification
     await PushNotification.findByIdAndUpdate(notificationId, {
@@ -186,6 +193,11 @@ const markNotificationAsRead = async (userId, notificationId) => {
  * @returns {Promise<object>} - Update result
  */
 const markAllNotificationsAsRead = async (userId) => {
+  const unreadNotifications = await UserNotification.find({
+    user: userId,
+    isRead: false,
+  }).select("pushNotification");
+
   const result = await UserNotification.updateMany(
     { user: userId, isRead: false },
     { isRead: true, readAt: new Date() }
@@ -193,11 +205,6 @@ const markAllNotificationsAsRead = async (userId) => {
 
   // Update read counts for all affected notifications
   if (result.modifiedCount > 0) {
-    const unreadNotifications = await UserNotification.find({
-      user: userId,
-      isRead: false,
-    }).select("pushNotification");
-
     const notificationIds = unreadNotifications.map((un) => un.pushNotification);
     
     await PushNotification.updateMany(

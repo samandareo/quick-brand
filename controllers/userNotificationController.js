@@ -23,6 +23,10 @@ exports.getUserNotifications = async (req, res, next) => {
         path: "pushNotification",
         select: "title message recipientType createdAt",
       })
+      .populate({
+        path: "user", // This will populate the user field
+        select: "name email", // Select the fields you want from the User model
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -34,7 +38,7 @@ exports.getUserNotifications = async (req, res, next) => {
       id: un._id,
       notificationId: un.pushNotification._id,
       title: un.pushNotification.title,
-      message: un.pushNotification.message,
+      message: pushNotificationService.substituteVariables(un.pushNotification.message, un.user),
       recipientType: un.pushNotification.recipientType,
       isRead: un.isRead,
       readAt: un.readAt,
