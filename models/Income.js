@@ -21,7 +21,7 @@ const incomeSchema = new mongoose.Schema({
     },
     lastTransaction: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Transaction",
+        ref: "IncomeTransaction",
     },
 }, { timestamps: true });
 

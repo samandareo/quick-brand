@@ -1,20 +1,27 @@
 const IncomeTransaction = require('../models/IncomeTransaction');
 const Income = require("../models/Income");
+const ApiResponse = require("../utils/apiResponse");
 
-exports.getUserIncome = async (userId) => {
+
+// @desc    Get user's income
+// @route   GET /api/v1/users/income
+// @access  User
+exports.getUserIncome = async (req, res, next) => {
     try {
+        const userId = req.user._id;
         if(!userId) {
-            return "Invalid user ID!";
+            return ApiResponse.invalid("User ID is required").send(res);
         }
 
-        const income = await Income.findOne({ userId: userId });
+        const income = await Income.findOne({ user: userId }).populate({ path: 'lastTransaction', model: 'IncomeTransaction', select: 'amount type description createdAt' });
+
         if (!income) {
-            return "Income not found for this user!";
+            return ApiResponse.notFound("Income not found for this user!").send(res);
         }
 
-        return "User income retrieved successfully!";
+        return ApiResponse.success("User income retrieved successfully!", income).send(res);
     } catch (error) {
-        return "An error occurred while retrieving user income.";
+        return ApiResponse.error("An error occurred while retrieving user income.").send(res);
     }
 };
 

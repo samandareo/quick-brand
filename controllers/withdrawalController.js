@@ -1,21 +1,21 @@
-const { mongoose } = require("mongoose");
+const { mongoose, get } = require("mongoose");
 const ApiResponse = require("../utils/apiResponse");
-const { createTransaction } = require("./walletController");
+const { createIncomeTransaction } = require("./incomeController");
 const { v4: uuidv4 } = require("uuid");
 
-const Wallet = require("../models/Wallet");
+const Income = require("../models/Income");
 const Withdraw = require("../models/WithdrawalModel");
 
 
-const getWallet = async (userId) => {
+const getIncome = async (userId) => {
   try {
-    const wallet = await Wallet.findOne({ user: userId });
-    if (!wallet) {
+    const income = await Income.findOne({ user: userId });
+    if (!income) {
       return null;
     }
-    return wallet;
+    return income;
   } catch (error) {
-    console.error("Error fetching wallet:", error);
+    console.error("Error fetching income:", error);
     return null;
   }
 };
@@ -108,16 +108,16 @@ exports.updateUserWithdrawalRequest = async (req, res, next) => {
         await withdrawal.save();
 
         if(status === "rejected") {
-            const wallet = await getWallet(withdrawal.userId);
-            if(!wallet) {
-                return ApiResponse.notFound("Wallet not found").send(res);
+            const income = await getIncome(withdrawal.userId);
+            if(!income) {
+                return ApiResponse.notFound("Income not found").send(res);
             }
 
-            wallet.balance += withdrawal.amount;
-            await wallet.save();
-            await createTransaction(
+            income.fromReferral += withdrawal.amount;
+            await income.save();
+            await createIncomeTransaction(
                 withdrawal.userId,
-                wallet._id,
+                income._id,
                 withdrawal.amount,
                 "credit",
                 `Withdrawal request rejected. Amount refunded: ${withdrawal.amount}`,
@@ -164,15 +164,15 @@ exports.createUserWithdrawalRequest = async (req, res, next) => {
     const userId = req.user._id;
     console.log("Creating withdrawal request for user:", userId);
     try {
-        const wallet = await getWallet(userId);
+        const income = await getIncome(userId);
 
-        if (!wallet) {
-            console.log("Wallet not found for user:", userId);
-            return ApiResponse.notFound("Wallet not found!").send(res);
+        if (!income) {
+            console.log("Income not found for user:", userId);
+            return ApiResponse.notFound("Income not found!").send(res);
         }
 
-        if (wallet.balance < amount) {
-            console.log("Insufficient balance for user:", userId, "Balance:", wallet.balance, "Requested amount:", amount);
+        if (income.totalIncome < amount) {
+            console.log("Insufficient balance for user:", userId, "Balance:", income.fromReferral, "Requested amount:", amount);
             return ApiResponse.invalid("Insufficient balance!").send(res);
         }
 
@@ -188,13 +188,20 @@ exports.createUserWithdrawalRequest = async (req, res, next) => {
             accountHolderName
         });
 
-        wallet.balance -= amount;
-        await wallet.save();
+        if (income.fromReferral < amount) {
+            let additionalAmount = amount - income.fromReferral;
+            income.fromReferral = 0;
+            income.fromShopping -= additionalAmount;
+            await income.save();
+        } else {
+            income.fromReferral -= amount;
+            await income.save();
+        }
 
         const refId = uuidv4();
-        await createTransaction(
+        await createIncomeTransaction(
             userId,
-            wallet._id,
+            income._id,
             amount,
             "credit",
             `Withdrawal request created. Amount deducted: ${amount}`,

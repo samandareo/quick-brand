@@ -38,6 +38,7 @@ app.use("/api/v1/admins", require("./routes/adminRoutes"));
 app.use("/api/v1/admins", require("./routes/mobileBankingAdminRoutes"));
 app.use("/api/v1/admins", require("./routes/adminManualWithdrawalRoutes"));
 
+app.use("/api/v1/users", require("./routes/incomeRoutes"));
 app.use("/api/v1/users", require("./routes/mobileBankingUserRoutes"));
 app.use("/api/v1/users", require("./routes/userManualWithdrawalRoutes"));
 app.use("/api/v1/users", require("./routes/userRoutes"));
