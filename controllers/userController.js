@@ -1,12 +1,14 @@
-const Transaction = require("../models/Transaction");
 const User = require("../models/User");
 const Wallet = require("../models/Wallet");
 const RewardInfo = require("../models/Reward");
 const SocialMedia = require("../models/SocialMedia");
 const Slider = require("../models/Slider");
+const incomeController = require("./incomeController");
+const Income = require("../models/Income");
 
 const ApiResponse = require("../utils/apiResponse");
 const { createTransaction } = require("../controllers/walletController");
+const { createIncomeTransaction } = require("../controllers/incomeController");
 
 // @desc    Register a new user
 // @route   POST /api/v1/users/register
@@ -52,6 +54,7 @@ exports.register = async (req, res, next) => {
     // Create wallet for the user
     const wallet = await Wallet.create({ user: user._id });
 
+    const income = await Income.create({ user: user._id });
     // Generate token
     const token = user.generateAuthToken();
 
@@ -80,27 +83,22 @@ exports.register = async (req, res, next) => {
 // @route   (Internal)
 exports.handleReferralBonus = async (newUserId, referrerId) => {
   try {
-    // Get wallets
-    const [referrerWallet, newUserWallet] = await Promise.all([
-      Wallet.findOne({ user: referrerId, isDeleted: false }),
-      Wallet.findOne({ user: newUserId, isDeleted: false }),
+    const [newUser, referrer] = await Promise.all([
+      User.findById(newUserId),
+      User.findById(referrerId),
     ]);
 
-    if (!referrerWallet || !newUserWallet) {
-      console.error("One or both wallets not found");
-      return;
+    if (!newUser || !referrer) {
+      throw new Error("Invalid user or referrer ID");
     }
 
     const rewardInfo = await RewardInfo.findOne({});
 
-    // Add bonus to referrer's wallet
-    referrerWallet.balance += rewardInfo.referalReward; // Example: 10 units bonus
-    await referrerWallet.save();
+    const referrerIncomeUpdated = await incomeController.updateUserIncome(referrerId, rewardInfo.referalReward, 0);
 
-    // Create transaction for referrer
-    await createTransaction(
+    await createIncomeTransaction(
       referrerId,
-      referrerWallet._id,
+      referrerIncomeUpdated._id,
       rewardInfo.referalReward,
       "credit",
       "Referral bonus",
@@ -108,14 +106,12 @@ exports.handleReferralBonus = async (newUserId, referrerId) => {
       { referredUser: newUserId }
     );
 
-    // Add bonus to new user's wallet
-    newUserWallet.balance += referalInfo.welcomeReward; // Example: 50 units bonus for new user
-    await newUserWallet.save();
+    const newUserIncomeUpdated = await incomeController.updateUserIncome(newUser, rewardInfo.welcomeReward, 0);
 
     // Create transaction for new user
-    await createTransaction(
+    await createIncomeTransaction(
       newUserId,
-      newUserWallet._id,
+      newUserIncomeUpdated._id,
       rewardInfo.welcomeReward,
       "credit",
       "Welcome referral bonus",

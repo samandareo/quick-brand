@@ -137,13 +137,14 @@ exports.updateUserWithdrawalRequest = async (req, res, next) => {
 // @access User
 exports.getUserOwnWithdrawalRequest = async (req, res, next) => {
     const userId = req.user._id;
-
+    console.log("Fetching withdrawal requests for user:", userId);
     if (!userId) {
         ApiResponse.invalid("Invalid user ID!").send(res);
     }
 
     try {
-        const userWithdrawals = await Withdraw.find({user: userId});
+        const userWithdrawals = await Withdraw.find({ userId: userId });
+
         if (!userWithdrawals) {
             ApiResponse.notFound("User withdrawals not found!").send(res);
         }
