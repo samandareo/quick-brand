@@ -7,7 +7,7 @@ let io;
 /**
  * Initialize Socket.IO
  * @param {object} server - HTTP server instance
- * @returns {object} - Socket.IO instance
+ * @returns {object} - .IO instance
  */
 const initializeSocket = (server) => {
   io = socketIO(server, {

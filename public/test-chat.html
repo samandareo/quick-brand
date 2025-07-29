@@ -272,7 +272,7 @@
             log('Attempting to connect...');
             
             try {
-                socket = io('http://localhost:3000', {
+                socket = io(process.env.FRONTEND_URL, {
                     auth: {
                         token: token
                     },
