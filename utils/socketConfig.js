@@ -12,20 +12,9 @@ let io;
 const initializeSocket = (server) => {
   io = socketIO(server, {
     cors: {
-      origin: [
-        "https://adminquickbondplush.aspshopping.com",
-        "https://quickbondplush.aspshopping.com", 
-        "http://localhost:3000", // for development
-        "http://localhost:5173"  // for Vite dev server
-      ],
+      origin: "*", // Configure this based on your frontend URL
       methods: ["GET", "POST"],
-      credentials: true,
-      allowedHeaders: ["authorization"]
     },
-    transports: ['websocket', 'polling'],
-    allowEIO3: true, // Enable Engine.IO v3 compatibility
-    pingTimeout: 60000,
-    pingInterval: 25000
   });
 
   // Authentication middleware

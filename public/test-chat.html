@@ -272,7 +272,7 @@
             log('Attempting to connect...');
             
             try {
-                socket = io(process.env.FRONTEND_URL, {
+                socket = io("https://adminquickbondplush.aspshopping.com", {
                     auth: {
                         token: token
                     },
