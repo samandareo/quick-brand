@@ -1,13 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const chatController = require("../controllers/chatController");
-const { protectUser, protectAdmin } = require("../middlewares/auth");
+const { protectUser, protectAdmin, protectUserOrAdmin } = require("../middlewares/auth");
 
 // User and Admin routes
-// how can I protect these routes with both user and admin?
-router.route("/conversations").get(protectAdmin, chatController.getConversations);
-router.route("/unread-count").get(protectUser, chatController.getUnreadCount);
-router.route("/unread-count").get(protectAdmin, chatController.getUnreadCount);
+router.route("/conversations").get(protectUserOrAdmin, chatController.getConversations);
+router.route("/unread-count").get(protectUserOrAdmin, chatController.getUnreadCount);
 
 // Conversation routes
 router
@@ -16,15 +14,15 @@ router
 
 router
   .route("/conversations/:conversationId/seen")
-  .post(protectAdmin, chatController.markConversationAsSeen);
+  .post(protectUserOrAdmin, chatController.markConversationAsSeen);
 
 // User info route
-router.route("/users/:userId").get(protectAdmin, chatController.getUserInfo);
+router.route("/users/:userId").get(protectUserOrAdmin, chatController.getUserInfo);
 
 // Conversation between specific users
 router
   .route("/conversation/:userId1/:userId2")
-  .get(protectAdmin, chatController.getConversationBetweenUsers);
+  .get(protectUserOrAdmin, chatController.getConversationBetweenUsers);
 
 // Admin only routes
 router.route("/stats").get(protectAdmin, chatController.getChatStats);

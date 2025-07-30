@@ -76,3 +76,57 @@ exports.protectUser = async (req, res, next) => {
     );
   }
 };
+
+// Protect routes for both admin and user
+exports.protectUserOrAdmin = async (req, res, next) => {
+  try {
+    let token;
+
+    if (req?.headers?.authorization) {
+      if (req.headers.authorization.startsWith("Bearer"))
+        token = req.headers.authorization.split(" ")[1];
+      else token = req.headers.authorization;
+    }
+
+    if (!token) {
+      return ApiResponse.unauthorized(
+        "Not authorized to access this route without a token"
+      ).send(res);
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Try to find admin first
+    const admin = await Admin.findOne({ _id: decoded.id, isDeleted: false });
+    
+    if (admin) {
+      req.admin = admin;
+      req.userType = 'admin';
+      return next();
+    }
+
+    // If not admin, try to find user
+    const user = await User.findOne({ _id: decoded.id, isDeleted: false });
+    
+    if (!user) {
+      return ApiResponse.unauthorized(
+        "Not authorized to access this route - invalid credentials"
+      ).send(res);
+    }
+
+    if (!user.isVerified && !(req.body?.type === "subscription")) {
+      return ApiResponse.unauthorized(
+        "User is not verified to access this route without a subscription"
+      ).send(res);
+    }
+
+    req.user = user;
+    req.userType = 'user';
+    next();
+
+  } catch (err) {
+    return ApiResponse.unauthorized(
+      `Not authorized to access this route: ${err.message}`
+    ).send(res);
+  }
+};
