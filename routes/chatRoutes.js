@@ -4,7 +4,9 @@ const chatController = require("../controllers/chatController");
 const { protectUser, protectAdmin } = require("../middlewares/auth");
 
 // User and Admin routes
+// how can I protect these routes with both user and admin?
 router.route("/conversations").get(protectAdmin, chatController.getConversations);
+router.route("/unread-count").get(protectUser, chatController.getUnreadCount);
 router.route("/unread-count").get(protectAdmin, chatController.getUnreadCount);
 
 // Conversation routes
