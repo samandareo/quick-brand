@@ -35,6 +35,7 @@ app.get("/api/test-chat", (req, res) => {
 
 // Routes
 app.use("/api/v1/admins", require("./routes/adminRoutes"));
+app.use("/api/v1/admins", require("./routes/adminRechargeRoutes"));
 app.use("/api/v1/admins", require("./routes/mobileBankingAdminRoutes"));
 app.use("/api/v1/admins", require("./routes/adminManualWithdrawalRoutes"));
 
@@ -42,6 +43,8 @@ app.use("/api/v1/users", require("./routes/incomeRoutes"));
 app.use("/api/v1/users", require("./routes/mobileBankingUserRoutes"));
 app.use("/api/v1/users", require("./routes/userManualWithdrawalRoutes"));
 app.use("/api/v1/users", require("./routes/userRoutes"));
+
+app.use("/api/v1/recharge", require("./routes/userRechargeRoutes"));
 
 app.use("/api/v1/wallet", require("./routes/walletRoutes"));
 app.use("/api/v1/offers", require("./routes/offerRoutes"));
