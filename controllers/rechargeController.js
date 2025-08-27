@@ -23,15 +23,15 @@ exports.rechargeUser = async (req, res) => {
             session.endSession();
             return ApiResponse.notFound("Wallet not found").send(res);
         }
-        if (wallet.balance < amount) {
-            await session.abortTransaction();
-            session.endSession();
-            return ApiResponse.success("Insufficient wallet balance").send(res);
-        }
+        // if (wallet.balance < amount) {
+        //     await session.abortTransaction();
+        //     session.endSession();
+        //     return ApiResponse.success("Insufficient wallet balance").send(res);
+        // }
 
-        // Balance deducation
-        wallet.balance -= amount;
-        await wallet.save({ session });
+        // // Balance deducation
+        // wallet.balance -= amount;
+        // await wallet.save({ session });
 
         await createTransaction(
             userId,
