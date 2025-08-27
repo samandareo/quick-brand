@@ -5,7 +5,7 @@ require("dotenv").config();
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost';
 const QUEUE_NAME = 'recharge-queue';
 
-async function publishToQueue(data) {
+exports.publishToQueue = async (data) => {
     const connection = await amqp.connect(RABBITMQ_URL);
     const channel = await connection.createChannel();
 
@@ -18,5 +18,3 @@ async function publishToQueue(data) {
         connection.close();
     }, 500);
 }
-
-module.exports = publishToQueue;
