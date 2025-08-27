@@ -5,5 +5,5 @@ const { protectUser } = require("../middlewares/auth");
 
 router.post("/", protectUser, rechargeController.rechargeUser);
 router.get("/", protectUser, rechargeController.getRecharges);
-
+router.get("/operators", protectUser, rechargeController.getRechargeOperators);
 module.exports = router;

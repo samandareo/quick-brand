@@ -119,6 +119,18 @@ exports.getAllRechargeOperators = async (req, res) => {
     }
 }
 
+exports.getRechargeOperatorById = async (req, res) => {
+    try {
+        const rechargeOperator = await RechargeOperator.findById(req.params.id);
+        if (!rechargeOperator) {
+            return ApiResponse.notFound("Recharge Operators are not found!").send(res);
+        }
+        return ApiResponse.success(rechargeOperator).send(res);
+    } catch (error) {
+        return ApiResponse.error(`An error has occured: ${error.message}`).send(res);
+    }
+}
+
 // User can get recharge operators
 exports.getRechargeOperators = async (req, res) => {
     try{
@@ -199,8 +211,8 @@ exports.toggleRechargeOperatorStatus = async (req, res) => {
         await rechargeOperator.save();
 
         ApiResponse.success(
-            operator,
-            `Operator ${operator.isActive ? "activated" : "deactivated"} successfully`
+            rechargeOperator,
+            `Operator ${rechargeOperator.isActive ? "activated" : "deactivated"} successfully`
         ).send(res);
     } catch (error) {
         return ApiResponse.error(`An error has occured: ${error.message}`).send(res);
@@ -216,7 +228,8 @@ exports.deleteRechargeOperator = async (req, res) => {
             return ApiResponse.notFound("Recharge operator not found!").send(res);
         }
 
-        await rechargeOperator.softDelete();
+        await rechargeOperator.deleteOne();
+
         ApiResponse.success(null, "Recharge operator deleted successfully!").send(res);
     } catch (error) {
         return ApiResponse.error(`An error has occured: ${error.message}`).send(res);
