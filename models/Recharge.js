@@ -5,7 +5,8 @@ const rechargeSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true },
     amount: {type: String, required: true },
     operator: { type: String, required: true },
-    status: {type: String, enum: ["pending", "completed", "failed"], default: "pending"},
+    status: {type: String, enum: ["pending", "processing", "completed", "failed"], default: "pending"},
+    retry_count: { type: Number, default: 0 },
     description: { type: String, default: "" },
 }, {timestamps: true});
 
