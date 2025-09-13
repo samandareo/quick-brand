@@ -14,9 +14,24 @@ exports.createTransaction = async (
   type,
   description,
   reference,
-  metadata = {}
+  metadata = {},
+  session=null
 ) => {
-  const transaction = await Transaction.create({
+  let transaction;
+  if (!session) {
+    transaction = await Transaction.create([{
+      user: userId,
+      wallet: walletId,
+      amount,
+      type,
+      description,
+      reference,
+      metadata,
+      status: "completed",
+    }], { session });
+  }
+
+  transaction = await Transaction.create({
     user: userId,
     wallet: walletId,
     amount,
@@ -26,6 +41,7 @@ exports.createTransaction = async (
     metadata,
     status: "completed",
   });
+
 
   // Update wallet's last transaction reference
   await Wallet.findByIdAndUpdate(walletId, {

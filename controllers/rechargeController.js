@@ -2,6 +2,7 @@ const ApiResponse = require('../utils/apiResponse');
 const { createTransaction } = require('./walletController');
 const Recharge = require("../models/Recharge");
 const Wallet = require("../models/Wallet");
+const Transaction = require("../models/Transaction");
 const RechargeOperator = require("../models/RechargeOperators")
 const { publishToQueue } = require("../utils/producer");
 
@@ -12,38 +13,40 @@ exports.rechargeUser = async (req, res) => {
     const amount = Number(req.body.amount);
 
     const userId = req.user._id;
-    const session = await Wallet.startSession();
-    session.startTransaction();
-
+    let session;
 
     try {
+        session = await Wallet.startSession();
+        session.startTransaction();
+
         const wallet = await Wallet.findOne({ user: userId }).session(session);
         if (!wallet) {
-            await session.abortTransaction();
-            session.endSession();
-            return ApiResponse.notFound("Wallet not found").send(res);
+            throw new Error("Wallet not found");
         }
         if (wallet.balance < amount) {
-            await session.abortTransaction();
-            session.endSession();
-            return ApiResponse.success("Insufficient wallet balance").send(res);
+            throw new Error("Insufficient wallet balance");
         }
 
-        // Balance deducation
+        // Balance deduction
         wallet.balance -= amount;
         await wallet.save({ session });
 
-        await createTransaction(
-            userId,
-            wallet._id,
-            amount,
-            "debit",
-            `Recharge for ${phoneNumber} on ${operator}`,
-            `ref-${Date.now()}`,
-            { operator, phoneNumber }
-        );
+        const walletTransaction = await Transaction.create([{
+            user: userId,
+            wallet: wallet._id,
+            amount: amount,
+            type: "debit",
+            description: `Recharge for ${phoneNumber} on ${operator}`,
+            reference: `ref-${Date.now()}`,
+            metadata: { operator, phoneNumber },
+            status: "completed",
+        }], { session });
 
-        // Create recharge record
+        await Wallet.findByIdAndUpdate(wallet._id, 
+            { lastTransaction: walletTransaction[0]._id },
+            { new: true, session }
+        ).session(session);
+
         const saveRecharge = await Recharge.create([{
             userId,
             phoneNumber,
@@ -54,13 +57,11 @@ exports.rechargeUser = async (req, res) => {
         }], { session });
 
         if (!saveRecharge) {
-            await session.abortTransaction();
-            session.endSession();
-            return ApiResponse.error("Failed to create recharge record").send(res);
+            throw new Error("Failed to create recharge record");
         }
 
         // await publishToQueue({
-        //     rechargeId: saveRecharge._id,
+        //     rechargeId: saveRecharge[0]._id,
         //     userId,
         //     phoneNumber,
         //     amount,
@@ -68,14 +69,18 @@ exports.rechargeUser = async (req, res) => {
         // });
 
         await session.commitTransaction();
-        session.endSession();
-
         return ApiResponse.success("Recharge request successful").send(res);
-        
+
     } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
-        return ApiResponse.error(`An error occured while processing the recharge request: ${error.message}`).send(res);
+        if (session) {
+            await session.abortTransaction();
+            session.endSession();
+        }
+        return ApiResponse.error(`An error occurred while processing the recharge request: ${error.message}`).send(res);
+    } finally {
+        if (session) {
+            session.endSession();
+        }
     }
 }
 
@@ -157,7 +162,7 @@ exports.createRechargeOperator = async (req, res) => {
     const { operatorName, isActive, operatorCode } = req.body;
 
     try {
-        if (!operatorName || !isActive || !operatorCode) {
+        if (!operatorName || typeof isActive === "undefined" || !operatorCode) {
             return ApiResponse.invalid("Missing required fields").send(res);
         }
 
