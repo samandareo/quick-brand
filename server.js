@@ -1,6 +1,6 @@
 const app = require("./app");
 const connectDB = require("./config/db");
-const { PORT } = require("./config/config");
+const { PORT, GRPC_PORT } = require("./config/config");
 const { initializeSocket } = require("./utils/socketConfig");
 const Income = require("./models/Income");
 const User = require("./models/User");
@@ -22,6 +22,8 @@ const server = app.listen(PORT, "0.0.0.0", async() => {
 // Initialize Socket.IO
 const io = initializeSocket(server);
 console.log("Socket.IO initialized");
+
+startGrpcServer(GRPC_PORT);
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err, promise) => {

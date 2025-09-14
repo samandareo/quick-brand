@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package wallet;
+
+service WalletService {
+    rpc GetWalletBalance (GetWalletRequest) returns (GetWalletResponse);
+    rpc DeductBalance (DeductBalanceRequest) returns (DeductBalanceResponse);
+    rpc RefundBalance (RefundBalanceRequest) returns (RefundBalanceResponse);
+}
+
+message GetWalletRequest {
+    string wallet_id = 1;
+}
+
+message GetWalletResponse {
+    string wallet_id = 1;
+    string balance = 2;
+}
+
+message DeductBalanceRequest {
+    string wallet_id = 1;
+    string user_id = 2;
+    string amount = 3;
+    string orderId = 4;
+}
+
+message DeductBalanceResponse {
+    bool success = 1;
+}
+
+message RefundBalanceRequest {
+    string wallet_id = 1;
+    string user_id = 2;
+    string amount = 3;
+    string orderId = 4;
+}
+
+message RefundBalanceResponse {
+    bool success = 1;
+}
