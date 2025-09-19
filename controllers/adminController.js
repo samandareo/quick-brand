@@ -15,6 +15,38 @@ const Slider = require("../models/Slider");
 const fs = require("fs");
 const path = require("path");
 
+// @desc Register admin
+// @route POST /api/v1/admins/register
+exports.register = async (req, res, next) => {
+  try {
+    const { name, email, password, subscriptionAmount } = req.body;
+
+    // 1. Check if admin already exists
+    let admin = await Admin.findOne({ email });
+    if (admin) {
+      return ApiResponse.error("Admin already exists", 400).send(res);
+    }
+
+    // 2. Create new admin
+    admin = new Admin({
+      name,
+      email,
+      password,
+      subscriptionAmount,
+    });
+    await admin.save();
+    
+    // 3. Generate token
+    const token = admin.generateAuthToken();
+    admin.password = undefined; // Remove password from output
+
+    ApiResponse.success({ token, admin }, "Admin registered successfully").send(
+      res
+    );
+  } catch (error) {
+    next(error);
+  }
+};
 
 // @desc    Login admin
 // @route   POST /api/v1/admins/login
