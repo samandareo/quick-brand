@@ -48,6 +48,15 @@ exports.register = async (req, res, next) => {
   }
 };
 
+exports.getAllAdmins = async (req, res, next) => {
+  try {
+    const admins = await Admin.find({ isDeleted: false }).select("-password");
+    ApiResponse.success(admins).send(res);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Login admin
 // @route   POST /api/v1/admins/login
 exports.login = async (req, res, next) => {
