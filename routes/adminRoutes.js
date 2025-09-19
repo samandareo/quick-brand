@@ -8,10 +8,8 @@ const {
 } = require("../utils/notificationService");
 const { socialMediaUpload, sliderUpload } = require("../utils/multerConfig");
 
-router.route("/register").post(adminController.register);
+router.route("/change").post(adminController.changePassword);
 router.route("/login").post(adminController.login);
-
-router.route("/get-all-admins").get(adminController.getAllAdmins);
 
 router.route("/me").get(protectAdmin, adminController.getMe);
 
