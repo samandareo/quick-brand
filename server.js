@@ -4,7 +4,7 @@ const { PORT, GRPC_PORT } = require("./config/config");
 const { initializeSocket } = require("./utils/socketConfig");
 const Income = require("./models/Income");
 const User = require("./models/User");
-
+const { startGrpcServer } = require("./grpcServer");
 // Connect to database
 connectDB();
 

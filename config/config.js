@@ -2,7 +2,7 @@ require("dotenv").config();
 
 module.exports = {
   PORT: process.env.PORT || 5000,
-  GRPC_PORT: process.env.GRPC_PORT || 50051;
+  GRPC_PORT: process.env.GRPC_PORT || 50051,
   MONGO_URL: process.env.MONGO_URL,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "30d",
