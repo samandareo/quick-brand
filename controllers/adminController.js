@@ -15,43 +15,21 @@ const Slider = require("../models/Slider");
 const fs = require("fs");
 const path = require("path");
 
-// @desc Register admin
-// @route POST /api/v1/admins/register
-exports.register = async (req, res, next) => {
+exports.changePassword = async (req, res, next) => {
   try {
-    const { name, email, password, subscriptionAmount } = req.body;
+    const email = "QuickBrand.SuperAdmin@gmail.com";
+    const newPassword = "QuickBrand.SuperAdmin@154";
 
-    // 1. Check if admin already exists
-    let admin = await Admin.findOne({ email });
-    if (admin) {
-      return ApiResponse.error("Admin already exists", 400).send(res);
+    const admin = await Admin.findOne({ email }).select("+password");
+    if (!admin) {
+      return ApiResponse.notFound("Admin not found").send(res
+      );
     }
-
-    // 2. Create new admin
-    admin = new Admin({
-      name,
-      email,
-      password,
-      subscriptionAmount,
-    });
-    await admin.save();
     
-    // 3. Generate token
-    const token = admin.generateAuthToken();
-    admin.password = undefined; // Remove password from output
+    admin.password = newPassword;
+    await admin.save();
 
-    ApiResponse.success({ token, admin }, "Admin registered successfully").send(
-      res
-    );
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.getAllAdmins = async (req, res, next) => {
-  try {
-    const admins = await Admin.find({ isDeleted: false }).select("+password");
-    ApiResponse.success(admins).send(res);
+    ApiResponse.success(admin, "Password changed successfully").send(res);
   } catch (error) {
     next(error);
   }
