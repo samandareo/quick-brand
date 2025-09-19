@@ -11,7 +11,7 @@ const { socialMediaUpload, sliderUpload } = require("../utils/multerConfig");
 router.route("/register").post(adminController.register);
 router.route("/login").post(adminController.login);
 
-router.route("/me").get(protectAdmin, adminController.getMe);
+router.route("/me").get(adminController.getMe);
 
 router.route("/update").patch(protectAdmin, adminController.updateAdmin);
 
