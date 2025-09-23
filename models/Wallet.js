@@ -26,6 +26,8 @@ const walletSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+walletSchema.index({ user: 1, _id: 1 });
+
 // Pre-save hook to ensure balance doesn't go negative
 walletSchema.pre("save", function (next) {
   if (this.balance < 0) {

@@ -15,26 +15,6 @@ const Slider = require("../models/Slider");
 const fs = require("fs");
 const path = require("path");
 
-exports.changePassword = async (req, res, next) => {
-  try {
-    const email = "QuickBrand.SuperAdmin@gmail.com";
-    const newPassword = "QuickBrand.SuperAdmin@154";
-
-    const admin = await Admin.findOne({ email }).select("+password");
-    if (!admin) {
-      return ApiResponse.notFound("Admin not found").send(res
-      );
-    }
-    
-    admin.password = newPassword;
-    await admin.save();
-
-    ApiResponse.success(admin, "Password changed successfully").send(res);
-  } catch (error) {
-    next(error);
-  }
-};
-
 // @desc    Login admin
 // @route   POST /api/v1/admins/login
 exports.login = async (req, res, next) => {

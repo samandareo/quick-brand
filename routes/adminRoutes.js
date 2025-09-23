@@ -8,7 +8,6 @@ const {
 } = require("../utils/notificationService");
 const { socialMediaUpload, sliderUpload } = require("../utils/multerConfig");
 
-router.route("/change").post(adminController.changePassword);
 router.route("/login").post(adminController.login);
 
 router.route("/me").get(protectAdmin, adminController.getMe);

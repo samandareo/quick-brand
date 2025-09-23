@@ -1,58 +1,105 @@
 const Wallet = require("../models/Wallet");
 const Transaction = require("../models/Transaction");
+const mongoose = require("mongoose");
+const grpc = require('@grpc/grpc-js');
 
 module.exports = {
     GetWalletBalance: async (call, callback) => {
         try {
-            const { wallet_id } = call.request;
-            const walletData = await Wallet.findById(wallet_id);
+            const { user_id } = call.request;
+            
+            // Early validation without database calls
+            if (!user_id || user_id.trim() === '') {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    details: "User ID is required"
+                });
+            }
+
+            if (!mongoose.Types.ObjectId.isValid(user_id)) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    details: "Invalid User ID format"
+                });
+            }
+
+            // Optimized query with lean() for faster response
+            const walletData = await Wallet.findOne({ user: user_id })
+                .select('balance user') // Only select needed fields
+                .lean(); // Returns plain JavaScript object (faster)
+
             if (!walletData) {
                 return callback({
                     code: grpc.status.NOT_FOUND,
                     details: "Wallet not found"
                 });
             }
-            const wallet = {
-                wallet_id: walletData._id.toString(),
-                balance: walletData.balance
+
+            const response = {
+                user_id: user_id.toString(),
+                balance: walletData.balance.toString()
             };
-            callback(null, { wallet });
+
+            callback(null, response);
         } catch (error) {
             callback({
                 code: grpc.status.INTERNAL,
-                details: "Error retrieving wallet"
+                details: "Error retrieving wallet: " + error.message
             });
         }
     },
+    
     DeductBalance: async (call, callback) => {
         let session;
         try {
-            session = await Wallet.startSession();
-            session.startTransaction();
+            const { user_id, amount, orderId } = call.request;
 
-            const { wallet_id, user_id, amount, orderId } = call.request;
-            const walletData = await Wallet.findById(wallet_id).session(session);
-            if (!walletData) {
-                return callback({
-                    code: grpc.status.NOT_FOUND,
-                    details: "Wallet not found"
-                });
-            }
-
-            if (walletData.balance < amount) {
+            // Validate inputs first (before starting session)
+            if (!user_id || !mongoose.Types.ObjectId.isValid(user_id)) {
                 return callback({
                     code: grpc.status.INVALID_ARGUMENT,
-                    details: "Insufficient funds"
+                    details: "Invalid User ID"
                 });
             }
 
-            walletData.balance -= amount;
-            await walletData.save({ session });
+            const deductAmount = parseFloat(amount);
+            if (isNaN(deductAmount) || deductAmount <= 0) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    details: "Invalid amount"
+                });
+            }
 
+            session = await mongoose.startSession();
+            session.startTransaction();
+
+            // Use findOneAndUpdate for atomic operation
+            const walletData = await Wallet.findOneAndUpdate(
+                { 
+                    user: user_id,
+                    balance: { $gte: deductAmount } // Ensure sufficient balance
+                },
+                { $inc: { balance: -deductAmount } },
+                { 
+                    new: true,
+                    session,
+                    select: 'balance user' // Only select needed fields
+                }
+            );
+
+            if (!walletData) {
+                await session.abortTransaction();
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    details: "Wallet not found or insufficient funds"
+                });
+            }
+
+            // Create transaction record
             const walletTransaction = await Transaction.create([{
                 user: user_id,
                 wallet: walletData._id,
-                amount: amount,
+                amount: deductAmount,
                 type: "debit",
                 description: `Delivery cost deduction`,
                 reference: `ref-${Date.now()}`,
@@ -60,11 +107,12 @@ module.exports = {
                 status: "completed",
             }], { session });
 
-            await Wallet.findByIdAndUpdate(walletData._id, 
+            // Update lastTransaction (optional - remove if not critical)
+            await Wallet.findByIdAndUpdate(
+                walletData._id, 
                 { lastTransaction: walletTransaction[0]._id },
-                { new: true, session }
-            ).session(session);
-
+                { session }
+            );
 
             await session.commitTransaction();
             callback(null, { success: true });
@@ -74,36 +122,62 @@ module.exports = {
             }
             callback({
                 code: grpc.status.INTERNAL,
-                details: "Error deducting balance"
+                details: "Error deducting balance: " + error.message
             });
         } finally {
             if (session) {
-                session.endSession();
+                await session.endSession();
             }
         }
     },
+    
     RefundBalance: async (call, callback) => {
         let session;
         try {
-            session = await Wallet.startSession();
-            session.startTransaction();
-            const { wallet_id, user_id, amount, orderId } = call.request;
+            const { user_id, amount, orderId } = call.request;
+            
+            // Early validation
+            if (!user_id || !mongoose.Types.ObjectId.isValid(user_id)) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    details: "Invalid User ID"
+                });
+            }
 
-            const walletData = await Wallet.findById(wallet_id).session(session);
+            const refundAmount = parseFloat(amount);
+            if (isNaN(refundAmount) || refundAmount <= 0) {
+                return callback({
+                    code: grpc.status.INVALID_ARGUMENT,
+                    details: "Invalid amount"
+                });
+            }
+
+            session = await mongoose.startSession();
+            session.startTransaction();
+
+            // Atomic update
+            const walletData = await Wallet.findOneAndUpdate(
+                { user: user_id },
+                { $inc: { balance: refundAmount } },
+                { 
+                    new: true,
+                    session,
+                    select: 'balance user'
+                }
+            );
+
             if (!walletData) {
+                await session.abortTransaction();
                 return callback({
                     code: grpc.status.NOT_FOUND,
                     details: "Wallet not found"
                 });
             }
 
-            walletData.balance += amount;
-            await walletData.save({ session });
-
-            const walletTransaction = await Transaction.create([{
+            await Transaction.create([{
                 user: user_id,
                 wallet: walletData._id,
-                amount: amount,
+                amount: refundAmount,
                 type: "credit",
                 description: `Refund delivery cost for order ${orderId}`,
                 reference: `ref-${Date.now()}`,
@@ -119,11 +193,11 @@ module.exports = {
             }
             callback({
                 code: grpc.status.INTERNAL,
-                details: "Error refunding balance"
+                details: "Error refunding balance: " + error.message
             });
         } finally {
             if (session) {
-                session.endSession();
+                await session.endSession();
             }
         }
     }
