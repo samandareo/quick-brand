@@ -4,7 +4,7 @@ const Recharge = require("../models/Recharge");
 const Wallet = require("../models/Wallet");
 const Transaction = require("../models/Transaction");
 const RechargeOperator = require("../models/RechargeOperators")
-const { publishToQueue } = require("../utils/producer");
+const { publishToQueue } = require("../services/producer");
 
 
 exports.rechargeUser = async (req, res) => {
@@ -60,13 +60,13 @@ exports.rechargeUser = async (req, res) => {
             throw new Error("Failed to create recharge record");
         }
 
-        // await publishToQueue({
-        //     rechargeId: saveRecharge[0]._id,
-        //     userId,
-        //     phoneNumber,
-        //     amount,
-        //     operator
-        // });
+        await publishToQueue({
+            rechargeId: saveRecharge[0]._id,
+            userId,
+            phoneNumber,
+            amount,
+            operator
+        });
 
         await session.commitTransaction();
         return ApiResponse.success("Recharge request successful").send(res);
