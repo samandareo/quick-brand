@@ -65,7 +65,8 @@ exports.rechargeUser = async (req, res) => {
             userId,
             phoneNumber,
             amount,
-            operator
+            operator,
+            retryCount: saveRecharge[0].retry_count
         });
 
         await session.commitTransaction();
