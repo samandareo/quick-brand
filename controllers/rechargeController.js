@@ -88,7 +88,7 @@ exports.rechargeUser = async (req, res) => {
 exports.getAllRecharges = async (req, res) => {
     try {
         const recharges = await Recharge.find().populate("userId", "name email");
-        return ApiResponse.success("Recharges fetched successfully", recharges).send(res);
+        return ApiResponse.success(recharges, "Recharges fetched successfully").send(res);
     } catch (error) {
         return ApiResponse.error(`An error occurred while fetching recharges: ${error.message}`).send(res);
     }
@@ -102,7 +102,7 @@ exports.getRecharges = async (req, res) => {
         if (!recharge) {
             return ApiResponse.notFound("Recharge not found").send(res);
         }
-        return ApiResponse.success("Recharges fetched successfully", recharge).send(res);
+        return ApiResponse.success(recharge, "Recharges fetched successfully").send(res);
     } catch (error) {
         return ApiResponse.error(`An error occurred while fetching the recharge: ${error.message}`).send(res);
     }
@@ -199,7 +199,7 @@ exports.updateRechargeOperator = async (req, res) => {
 
         await rechargeOperator.save();
 
-        return ApiResponse.success("Recharge operator updated successfully", rechargeOperator).send(res);
+        return ApiResponse.success(rechargeOperator, "Recharge operator updated successfully").send(res);
     } catch (error) {
         return ApiResponse.error(`An error occured while updating the recharge operator: ${error.message}`);
     }
