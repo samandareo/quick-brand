@@ -77,7 +77,7 @@ exports.rechargeUser = async (req, res) => {
             await session.abortTransaction();
             session.endSession();
         }
-        return ApiResponse.error(`An error occurred while processing the recharge request: ${error.message}`).send(res);
+        return ApiResponse.error(error.message).send(res);
     } finally {
         if (session) {
             session.endSession();
