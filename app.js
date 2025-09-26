@@ -53,7 +53,7 @@ app.use("/api/v1/operators", require("./routes/operatorRoutes"));
 app.use("/api/v1/push-notifications", require("./routes/pushNotificationRoutes"));
 app.use("/api/v1/chat", require("./routes/chatRoutes"));
 
-app.use("/api/v1/recovery", require("./routes/recoveryController"));
+app.use("/api/v1/recovery", require("./routes/recoveryRoutes"));
 // Error handler
 app.use(errorHandler);
 
