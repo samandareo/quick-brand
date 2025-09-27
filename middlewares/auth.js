@@ -63,7 +63,7 @@ exports.protectUser = async (req, res, next) => {
         "Recovery token cannot be used to access this route"
       ).send(res);
     }
-    
+
     const user = await User.findOne({ _id: decoded.id, isDeleted: false });
 
     if (!user)
@@ -166,7 +166,7 @@ exports.protectRecovery = async (req, res, next) => {
 
     req.recoveryRecord = recoveryRecord;
 
-    const user = await User.findOne({ phoneNumber: recoveryRecord.phoneNumber, isDeleted: false });
+    const user = await User.findOne({ phoneNo: recoveryRecord.phoneNumber, isDeleted: false });
 
     if (!user) {
       return ApiResponse.unauthorized(
