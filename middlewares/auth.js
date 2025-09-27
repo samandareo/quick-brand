@@ -3,6 +3,7 @@ const ApiResponse = require("../utils/apiResponse");
 const Admin = require("../models/Admin");
 const User = require("../models/User");
 const Recovery = require("../models/Recovery");
+require("dotenv").config();
 
 // Protect admin routes
 exports.protectAdmin = async (req, res, next) => {
