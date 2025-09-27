@@ -20,7 +20,9 @@ exports.recovery = async (req, res) => {
             recoveryRecord = await Recovery.create({ phoneNumber, attempts: 1 });
         }
 
+        console.log(phoneNumber, name, balance);
         const user = await User.findOne({ phoneNo: phoneNumber }).populate('wallet');
+        console.log(user);
         if (!user) {
             return ApiResponse.notFound("User not found").send(res);
         }
