@@ -33,6 +33,7 @@ exports.recovery = async (req, res) => {
         }
 
         if (user.name !== name || user.balance !== Number(balance)) {
+            console.error("User details do not match:", { userName: user.name, userBalance: user.balance, providedName: name, providedBalance: balance });
             return ApiResponse.invalid("Provided details do not match our records").send(res);
         }
 
