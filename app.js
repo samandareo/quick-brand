@@ -39,6 +39,8 @@ app.use("/api/v1/admins", require("./routes/adminRechargeRoutes"));
 app.use("/api/v1/admins", require("./routes/mobileBankingAdminRoutes"));
 app.use("/api/v1/admins", require("./routes/adminManualWithdrawalRoutes"));
 
+app.use("/api/v1/recovery", require("./routes/recoveryRoutes"));
+
 app.use("/api/v1/users", require("./routes/incomeRoutes"));
 app.use("/api/v1/users", require("./routes/mobileBankingUserRoutes"));
 app.use("/api/v1/users", require("./routes/userManualWithdrawalRoutes"));
@@ -52,8 +54,6 @@ app.use("/api/v1/payment", require("./routes/paymentRoutes"));
 app.use("/api/v1/operators", require("./routes/operatorRoutes"));
 app.use("/api/v1/push-notifications", require("./routes/pushNotificationRoutes"));
 app.use("/api/v1/chat", require("./routes/chatRoutes"));
-
-app.use("/api/v1/recovery", require("./routes/recoveryRoutes"));
 // Error handler
 app.use(errorHandler);
 

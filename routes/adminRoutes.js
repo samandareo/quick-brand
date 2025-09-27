@@ -18,6 +18,10 @@ router
   .route("/update-password")
   .patch(protectAdmin, adminController.updatePassword);
 
+router.post("/reset-user-password", protectAdmin, adminController.resetUserPassword);
+
+router.route("/logout").post(protectAdmin, adminController.logout);
+
 router.route("/dashboard").get(protectAdmin, adminController.getDashboardStats);
 
 router
@@ -65,5 +69,6 @@ router.route("/sliders/:id")
   .get(protectAdmin, adminController.getSliderById)
   .put(protectAdmin, sliderUpload.single("image"), adminController.updateSlider)
   .delete(protectAdmin, adminController.deleteSlider);
+
 
 module.exports = router;

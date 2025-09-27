@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const ApiResponse = require("../utils/apiResponse");
 const Admin = require("../models/Admin");
 const User = require("../models/User");
+const Recovery = require("../models/Recovery");
 
 // Protect admin routes
 exports.protectAdmin = async (req, res, next) => {
@@ -124,6 +125,50 @@ exports.protectUserOrAdmin = async (req, res, next) => {
     req.userType = 'user';
     next();
 
+  } catch (err) {
+    return ApiResponse.unauthorized(
+      `Not authorized to access this route: ${err.message}`
+    ).send(res);
+  }
+};
+
+exports.protectRecovery = async (req, res, next) => {
+  try {
+    let token;
+    
+    if (req?.headers?.authorization) {
+      if (req.headers.authorization.startsWith("Bearer"))
+        token = req.headers.authorization.split(" ")[1];
+      else token = req.headers.authorization;
+    }
+
+    if (!token) {
+      return ApiResponse.unauthorized(
+        "Not authorized to access this route without a token"
+      ).send(res);
+    }
+    
+    const decoded = jwt.verify(token, process.env.RECOVERY_JWT_SECRET, { maxAge: '15m' });
+    const recoveryRecord = await Recovery.findOne({ _id: decoded.id });
+
+    if (!recoveryRecord) {
+      return ApiResponse.unauthorized(
+        "Not authorized to access this route - invalid recovery record"
+      ).send(res);
+    }
+
+    req.recoveryRecord = recoveryRecord;
+
+    const user = await User.findOne({ phoneNumber: recoveryRecord.phoneNumber, isDeleted: false });
+
+    if (!user) {
+      return ApiResponse.unauthorized(
+        "Not authorized to access this route - associated user not found"
+      ).send(res);
+    }
+
+    req.user = user;
+    next();
   } catch (err) {
     return ApiResponse.unauthorized(
       `Not authorized to access this route: ${err.message}`

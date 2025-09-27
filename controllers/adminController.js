@@ -11,6 +11,7 @@ const Notification = require("../models/Notification");
 const RewardInfo = require("../models/Reward");
 const SocialMedia = require("../models/SocialMedia");
 const Slider = require("../models/Slider");
+const { resetUserPassword } = require("../utils/resetUserPassword");
 
 const fs = require("fs");
 const path = require("path");
@@ -617,3 +618,17 @@ exports.deleteSlider = async (req, res, next) => {
     next(error);
   }
 }
+
+
+exports.resetUserPassword = async (req, res, next) => {
+  try {
+    const { phoneNo, newPassword } = req.body;
+    const success = await resetUserPassword(phoneNo, newPassword);
+    if (!success) {
+      return ApiResponse.notFound("User not found").send(res);
+    }
+    ApiResponse.success(null, "Password reset successfully").send(res);
+  } catch (error) {
+    next(error);
+  }
+};
