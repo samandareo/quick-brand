@@ -7,9 +7,16 @@ exports.recovery = async (req, res) => {
     try {
         const { phoneNumber, name, balance } = req.body;
 
+        const user = await User.findOne({ phoneNo: phoneNumber }).populate('wallet');
+        console.log(user);
+        if (!user) {
+            return ApiResponse.notFound("User not found").send(res);
+        }
+
         let recoveryRecord = await Recovery.findOne({ phoneNumber });
         if (recoveryRecord) {
             if (recoveryRecord.attempts > 5) {
+                
                 const authToken = user.generateAuthToken(true);
                 return ApiResponse.success({ token: authToken, recoveryFailed: true }, "Too many recovery attempts. Please try to recover with support.").send(res);
             } else {
@@ -18,13 +25,6 @@ exports.recovery = async (req, res) => {
             }
         } else {
             recoveryRecord = await Recovery.create({ phoneNumber, attempts: 1 });
-        }
-
-        console.log(phoneNumber, name, balance);
-        const user = await User.findOne({ phoneNo: phoneNumber }).populate('wallet');
-        console.log(user);
-        if (!user) {
-            return ApiResponse.notFound("User not found").send(res);
         }
 
         if (user.name !== name || user.balance !== balance) {
