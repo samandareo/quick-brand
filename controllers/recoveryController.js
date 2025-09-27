@@ -32,7 +32,7 @@ exports.recovery = async (req, res) => {
             recoveryRecord = await Recovery.create({ phoneNumber, attempts: 1 });
         }
 
-        if (user.name !== name || user.balance !== balance) {
+        if (user.name !== name || user.balance !== Number(balance)) {
             return ApiResponse.invalid("Provided details do not match our records").send(res);
         }
 
