@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const { RECOVERY_JWT_SECRET } = require('../config/config');
+require('dotenv').config();
 
 const recoverySchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true },
@@ -8,7 +8,7 @@ const recoverySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 recoverySchema.methods.generateRecoveryToken = function () {
-    return jwt.sign({ id: this._id }, RECOVERY_JWT_SECRET, { expiresIn: '5m' });
+    return jwt.sign({ id: this._id }, process.env.RECOVERY_JWT_SECRET);
 };
 
 module.exports = mongoose.model('Recovery', recoverySchema);

@@ -1,7 +1,7 @@
 const Recovery = require('../models/Recovery');
 const User = require('../models/User');
 const ApiResponse = require('../utils/apiResponse');
-const { resetUserPassword } = require('./adminController'); 
+const { resetUserPassword } = require('../utils/resetUserPassword'); 
 
 exports.recovery = async (req, res) => {
     try {

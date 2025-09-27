@@ -3,7 +3,6 @@ const ApiResponse = require("../utils/apiResponse");
 const Admin = require("../models/Admin");
 const User = require("../models/User");
 const Recovery = require("../models/Recovery");
-const { RECOVERY_JWT_SECRET } = require("../config/config")
 require("dotenv").config();
 
 // Protect admin routes
