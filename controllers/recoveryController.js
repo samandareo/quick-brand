@@ -9,9 +9,9 @@ exports.recovery = async (req, res) => {
         console.error("Recovery request received with data:", req.body);
 
         if (!phoneNumber || !name || balance === undefined) {
-            return ApiResponse.badRequest("Phone number, name, and balance are required").send(res);
+            return ApiResponse.invalid("Phone number, name, and balance are required").send(res);
         }
-        
+
         const user = await User.findOne({ phoneNo: phoneNumber }).populate('wallet');
 
         if (!user) {
