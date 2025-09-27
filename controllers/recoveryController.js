@@ -19,7 +19,7 @@ exports.recovery = async (req, res) => {
 
         let recoveryRecord = await Recovery.findOne({ phoneNumber });
         if (recoveryRecord) {
-            if (recoveryRecord.attempts > 5) {
+            if (recoveryRecord.attempts >= 5) {
 
                 const authToken = user.generateAuthToken(true);
                 return ApiResponse.success({ token: authToken, recoveryFailed: true }, "Too many recovery attempts. Please try to recover with support.").send(res);
