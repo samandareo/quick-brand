@@ -33,7 +33,7 @@ exports.recovery = async (req, res) => {
         }
 
         if (user.name !== name || user.balance !== balance) {
-            return ApiResponse.badRequest("Provided details do not match our records").send(res);
+            return ApiResponse.invalid("Provided details do not match our records").send(res);
         }
 
         const recoveryToken = recoveryRecord.generateRecoveryToken();
