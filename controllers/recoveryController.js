@@ -6,14 +6,13 @@ const { resetUserPassword } = require('./adminController');
 exports.recovery = async (req, res) => {
     try {
         const { phoneNumber, name, balance } = req.body;
-        console.error("Recovery request received with data:", req.body);
 
         if (!phoneNumber || !name || balance === undefined) {
             return ApiResponse.invalid("Phone number, name, and balance are required").send(res);
         }
 
         const user = await User.findOne({ phoneNo: phoneNumber }).populate('wallet');
-        console.error("User found:", user);
+
         if (!user) {
             return ApiResponse.notFound("User not found").send(res);
         }
@@ -32,8 +31,7 @@ exports.recovery = async (req, res) => {
             recoveryRecord = await Recovery.create({ phoneNumber, attempts: 1 });
         }
 
-        if (user.name !== name || user.balance !== Number(balance)) {
-            console.error("User details do not match:", { userName: user.name, userBalance: user.balance, providedName: name, providedBalance: balance });
+        if (user.name !== name || user.walletbalance !== Number(balance)) {
             return ApiResponse.invalid("Provided details do not match our records").send(res);
         }
 
@@ -43,7 +41,7 @@ exports.recovery = async (req, res) => {
         console.error("Recovery error:", error);
         return ApiResponse.error(`An error occurred during recovery: ${error.message}`).send(res);
     }
-}
+};
 
 exports.resetPassword = async (req, res) => {
     try {
