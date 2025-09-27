@@ -22,7 +22,7 @@ exports.recovery = async (req, res) => {
             if (recoveryRecord.attempts >= 5) {
 
                 const authToken = user.generateAuthToken(true);
-                return ApiResponse.success({ token: authToken, recoveryFailed: true }, "Too many recovery attempts. Please try to recover with support.").send(res);
+                return ApiResponse.success({ liveToken: authToken, recoveryFailed: true }, "Too many recovery attempts. Please try to recover with support.").send(res);
             } else {
                 recoveryRecord.attempts += 1;
                 await recoveryRecord.save();
