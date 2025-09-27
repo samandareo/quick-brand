@@ -156,7 +156,6 @@ exports.protectRecovery = async (req, res, next) => {
       ).send(res);
     }
     
-    console.error(`Using secret: ${process.env.RECOVERY_JWT_SECRET}`);
     const decoded = jwt.verify(token, process.env.RECOVERY_JWT_SECRET);
     const recoveryRecord = await Recovery.findOne({ _id: decoded.id });
 
@@ -180,7 +179,7 @@ exports.protectRecovery = async (req, res, next) => {
     next();
   } catch (err) {
     return ApiResponse.unauthorized(
-      `Not authorized to access this route: ${err.message}`
+      `Not authorized to access this route: ${err.message} ${process.env.RECOVERY_JWT_SECRET}`
     ).send(res);
   }
 };
