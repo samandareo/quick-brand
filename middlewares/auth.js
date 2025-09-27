@@ -156,7 +156,7 @@ exports.protectRecovery = async (req, res, next) => {
       ).send(res);
     }
     
-    const decoded = jwt.verify(token, RECOVERY_JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.RECOVERY_JWT_SECRET);
     const recoveryRecord = await Recovery.findOne({ _id: decoded.id });
 
     if (!recoveryRecord) {
