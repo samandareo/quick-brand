@@ -58,3 +58,20 @@ exports.resetPassword = async (req, res) => {
         return ApiResponse.error(`An error occurred while resetting password: ${error.message}`).send(res);
     }
 };
+
+exports.takeAttempts = async (req, res) => {
+    try {
+        const { phoneNumber } = req.body;
+        if (!phoneNumber) {
+            return ApiResponse.invalid("Phone number is required").send(res);
+        }
+        const recoveryRecord = await Recovery.findOne({ phoneNumber });
+        if (!recoveryRecord) {
+            return ApiResponse.notFound("No recovery attempts found for this phone number").send(res);
+        }
+        return ApiResponse.success({ attempts: recoveryRecord.attempts }, "Recovery attempts retrieved successfully").send(res);
+    } catch (error) {
+        console.error("Take attempts error:", error);
+        return ApiResponse.error(`An error occurred while retrieving attempts: ${error.message}`).send(res);
+    }
+};
