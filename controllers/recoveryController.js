@@ -6,9 +6,14 @@ const { resetUserPassword } = require('./adminController');
 exports.recovery = async (req, res) => {
     try {
         const { phoneNumber, name, balance } = req.body;
+        console.error("Recovery request received with data:", req.body);
 
+        if (!phoneNumber || !name || balance === undefined) {
+            return ApiResponse.badRequest("Phone number, name, and balance are required").send(res);
+        }
+        
         const user = await User.findOne({ phoneNo: phoneNumber }).populate('wallet');
-        console.log(user);
+
         if (!user) {
             return ApiResponse.notFound("User not found").send(res);
         }
@@ -16,7 +21,7 @@ exports.recovery = async (req, res) => {
         let recoveryRecord = await Recovery.findOne({ phoneNumber });
         if (recoveryRecord) {
             if (recoveryRecord.attempts > 5) {
-                
+
                 const authToken = user.generateAuthToken(true);
                 return ApiResponse.success({ token: authToken, recoveryFailed: true }, "Too many recovery attempts. Please try to recover with support.").send(res);
             } else {
