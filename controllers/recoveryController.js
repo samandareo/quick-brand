@@ -13,7 +13,7 @@ exports.recovery = async (req, res) => {
         }
 
         const user = await User.findOne({ phoneNo: phoneNumber }).populate('wallet');
-        console.info("User found:", user);
+        console.error("User found:", user);
         if (!user) {
             return ApiResponse.notFound("User not found").send(res);
         }
