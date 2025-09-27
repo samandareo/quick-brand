@@ -20,8 +20,6 @@ router
 
 router.post("/reset-user-password", protectAdmin, adminController.resetUserPassword);
 
-router.route("/logout").post(protectAdmin, adminController.logout);
-
 router.route("/dashboard").get(protectAdmin, adminController.getDashboardStats);
 
 router
