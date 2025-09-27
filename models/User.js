@@ -80,10 +80,12 @@ userSchema.pre("findOneAndUpdate", async function (next) {
 });
 
 // Generate JWT token
-userSchema.methods.generateAuthToken = function () {
-  return jwt.sign({ id: this._id,  type: "user", walletId: this.wallet }, process.env.JWT_SECRET, {
-    // expiresIn: process.env.JWT_EXPIRES_IN || "30d",
-  });
+userSchema.methods.generateAuthToken = function (recovery = false) {
+  if (recovery) {
+    return jwt.sign({ id: this._id,  type: "user", walletId: this.wallet, recovery: true }, process.env.JWT_SECRET);
+  }
+
+  return jwt.sign({ id: this._id,  type: "user", walletId: this.wallet }, process.env.JWT_SECRET);
 };
 
 // Compare passwords

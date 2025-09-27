@@ -57,6 +57,13 @@ exports.protectUser = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.recovery === true) {
+      return ApiResponse.badRequest(
+        "Recovery token cannot be used to access this route"
+      ).send(res);
+    }
+    
     const user = await User.findOne({ _id: decoded.id, isDeleted: false });
 
     if (!user)
