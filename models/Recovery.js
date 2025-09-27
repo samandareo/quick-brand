@@ -8,7 +8,7 @@ const recoverySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 recoverySchema.methods.generateRecoveryToken = function () {
-    return jwt.sign({ id: this._id }, process.env.RECOVERY_JWT_SECRET);
+    return jwt.sign({ id: this._id }, process.env.RECOVERY_JWT_SECRET, { expiresIn: '5m' });
 };
 
 module.exports = mongoose.model('Recovery', recoverySchema);

@@ -48,7 +48,7 @@ exports.resetPassword = async (req, res) => {
         const { newPassword } = req.body;
         const user = req.user;
 
-        const resetSuccess = await resetUserPassword(user.phoneNumber, newPassword);
+        const resetSuccess = await resetUserPassword(user.phoneNo, newPassword);
         if (!resetSuccess) {
             return ApiResponse.error("Failed to reset password").send(res);
         }
