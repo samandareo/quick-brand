@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const recoverySchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true },
